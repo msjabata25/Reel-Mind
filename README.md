@@ -5,8 +5,8 @@
 Let’s be honest: your "Saved" folder on Instagram is a graveyard. You’ve got a 3-year-old recipe for sourdough, a workout routine you’ll never do, and a "life hack" for cleaning a toaster that you don't even own. 
 
 **Reel-Mind** uses AI to actually categorize these reels so you can find them later. It’s like a personal librarian for your ADHD-fueled scrolling sessions.
-
 ---
+![App Banner or Screenshot Placeholder](screenshots/Basic-UI)
 
 ## 🐣 The "Freshman" Disclaimer
 I am a freshman. I just learned what a "POST request" is like... three days ago. 
@@ -20,7 +20,7 @@ I am a freshman. I just learned what a "POST request" is like... three days ago.
 
 I’m not a wizard; I’m just really good at connecting things that are smarter than me. Here is the life cycle of a reel in this app:
 
-
+![App in use](screenshots/In-use-screenshot)
 
 1.  **The Handover:** You give the app a URL. The app says "Thanks, I'll take it from here."
 2.  **The Heist (`yt-dlp`):** My backend uses `yt-dlp` to sneakily download the reel. It’s like a digital repo man, but for your memes.

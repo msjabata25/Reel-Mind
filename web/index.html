@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Reel Categorizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link href="styles.css" rel="stylesheet" />
+  
+</head>
+<body>
+
+<div class="bg-mesh"></div>
+<div class="grain"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="card">
+
+  <div class="icon-wrap">
+    <!-- AI / tag icon -->
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2a7 7 0 0 1 7 7c0 4-3 6-3 9H8c0-3-3-5-3-9a7 7 0 0 1 7-7z"/>
+      <line x1="9" y1="21" x2="15" y2="21"/>
+      <line x1="9.5" y1="18" x2="14.5" y2="18"/>
+      <line x1="12" y1="6" x2="12" y2="11"/>
+      <line x1="9.5" y1="8.5" x2="14.5" y2="8.5"/>
+    </svg>
+  </div>
+
+  <h1>ReelMind</h1>
+  <p class="subtitle">Drop a Reel URL — AI tags, summarizes & saves it so you never lose it again</p>
+
+  <div class="input-group">
+    <input
+      type="url"
+      class="url-input"
+      id="reelUrl"
+      placeholder="https://www.instagram.com/reel/..."
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button class="paste-btn" id="pasteBtn" title="Paste from clipboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="2" width="6" height="4" rx="1"/>
+        <path d="M8 4H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/>
+        <path d="M9 12h6M9 16h4"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <button class="submit-btn" id="submitBtn" disabled>
+    <span class="btn-text">CATEGORIZE REEL</span>
+    <div class="spinner"></div>
+  </button>
+
+  <div class="divider"><span>CATEGORIES & TAGS</span></div>
+
+  <div class="result-box" id="resultBox">
+    <div class="result-label">AI Analysis</div>
+    <div id="resultContent" class="result-content"></div>
+  </div>
+
+  <p class="footer-note">
+    AI-powered categorization &nbsp;·&nbsp; Never lose a saved Reel again
+  </p>
+
+</div>
+
+<script src="app.js" defer></script>
+
+</body>
+</html>

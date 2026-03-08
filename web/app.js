@@ -99,7 +99,10 @@ input.addEventListener('input', () => {
 });
 
 input.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && !submitBtn.disabled) submitBtn.click();
+  if (e.key === 'Enter' && !submitBtn.disabled) {
+    e.preventDefault()
+    submitBtn.click()
+  }
 });
 
 pasteBtn.addEventListener('click', async () => {
@@ -111,7 +114,8 @@ pasteBtn.addEventListener('click', async () => {
   }
 });
 
-submitBtn.addEventListener('click', async () => {
+submitBtn.addEventListener('click', async (e) => {
+  e.preventDefault()
   const url = input.value.trim();
   if (!url) return;
 

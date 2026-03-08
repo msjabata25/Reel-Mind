@@ -1,6 +1,5 @@
 from google import genai
 from fastapi.middleware.cors import CORSMiddleware
-from tkinter import Tk, filedialog
 from google.genai import types
 import pathlib
 from vid_downloader import download_instagram_video
@@ -9,15 +8,16 @@ import os
 import fastapi
 import json
 from pydantic import BaseModel
-
-
+from supabase import create_client
+import uuid
 app = fastapi.FastAPI()
 
 
 
 load_dotenv()  
 client = genai.Client(api_key= os.getenv("GEMINI_API_KEY"))
-
+global supabase
+supabase = create_client(os.getenv("SUPABASE_URL") , os.getenv("SUPABASE_KEY"))
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,9 +37,10 @@ async def categorize_video(request: ReelRequest):
     print(f"Downloading video from: {request.url}")
     
     # Download the video using the URL from the frontend
-    download_instagram_video(request.url, output_dir="downloads")
+    unique_id = str(uuid.uuid4())
+    download_instagram_video(request.url, output_dir=f"downloads/{unique_id}")
 
-    downloads_folder = pathlib.Path("downloads")
+    downloads_folder = pathlib.Path(f"downloads/{unique_id}")
     video_files = list(downloads_folder.glob("*.mp4"))
 
     if not video_files:
@@ -62,7 +63,7 @@ async def categorize_video(request: ReelRequest):
     """
     try:
         response = client.models.generate_content(
-            model="gemini-3-flash-preview", 
+            model="gemini-2.5-flash", 
         contents=types.Content(
             parts=[
                 types.Part(inline_data=types.Blob(data=video_bytes, mime_type="video/mp4")),
@@ -72,6 +73,13 @@ async def categorize_video(request: ReelRequest):
     )
         result = json.loads(response.text)
         print(f"AI Response: {result}")
+        supabase.table("Reels").insert({
+            "url" : request.url ,
+            "summary" : result["summary"],
+            "tags": result["tags"],
+            "categories" : result["categories"]
+        }).execute()
+
         return result
     except Exception as e:
         print(f"AI Error: {e}")
@@ -81,5 +89,4 @@ async def categorize_video(request: ReelRequest):
         "tags": ["TryAgain"]
     }
     
-
 

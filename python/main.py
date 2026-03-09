@@ -90,3 +90,7 @@ async def categorize_video(request: ReelRequest):
     }
     
 
+@app.get("/reels")
+async def get_reels():
+    result = supabase.table("Reels").select("*").execute()
+    return result.data

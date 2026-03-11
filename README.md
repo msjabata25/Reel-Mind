@@ -1,87 +1,128 @@
-# 🧠 Reel-Mind 
+# 🧠 Reel-Mind
 
-**The AI-powered search engine for your digital hoarding habits.**
+**the AI-powered search engine for ur digital hoarding habits.**
 
-Let’s be honest: your "Saved" folder on Instagram is a graveyard. You’ve got a 3-year-old recipe for sourdough, a workout routine you’ll never do, and a "life hack" for cleaning a toaster that you don't even own. 
+ok real talk: ur "Saved" folder on instagram is literally a graveyard. u got a 3-year-old sourdough recipe, a workout u SWORE u'd do, and a "life hack" for a toaster u don't even own.
 
-**Reel-Mind** uses AI to actually categorize these reels so you can find them later. It’s like a personal librarian for your ADHD-fueled scrolling sessions.
----
-![App Banner or Screenshot Placeholder](screenshots/Basic-UI)
-
-## 🐣 The "Freshman" Disclaimer
-I am a freshman. I just learned what a "POST request" is like... three days ago. 
-* **The Code:** Probably looks like a bowl of spaghetti dropped from a height of six feet.
-* **The Logic:** Mostly held together by Stack Overflow threads and sheer willpower.
-* **The UI:** If it looks weird on your screen, try squinting. It helps.
+**Reel-Mind** uses AI to actually categorize these reels so u can find them again. think of it as a personal librarian for ur ADHD-fueled 2am scrolling sessions. except now it has a login page so ur saved reels are actually YOURS and not just vibes floating in a database.
 
 ---
 
-## ⚙️ How It Works (The "Big Brain" Logic)
+![Main UI](screenshots/Basic-UI)
+![Saved Reels](screenshots/Saved-Reels)
 
-I’m not a wizard; I’m just really good at connecting things that are smarter than me. Here is the life cycle of a reel in this app:
+## 🐣 the "Freshman" Disclaimer
 
+still a freshman. still figuring things out. the codebase is maybe slightly less spaghetti than before but like... no promises.
 
-
-1.  **The Handover:** You give the app a URL. The app says "Thanks, I'll take it from here."
-2.  **The Heist (`yt-dlp`):** My backend uses `yt-dlp` to sneakily download the reel. It’s like a digital repo man, but for your memes.
-3.  **The Interrogation (Gemini AI):** I send that video file over to **Gemini**. I basically ask the AI, *"Yo , just place this into a category cuz I'm lazy to do that myself so i dont absolutely not forget about in the next 5 mins"* 4.  **The Report:** Gemini just places it in it's own neat little digital shelf (I swear i have more plans for this im just limited by my short attention span and terrible coding skills). 
-5.  **The Delivery:** **FastAPI** catches that info and sprints back to the **HTML/CSS/JS** frontend to show you your neatly categorized reel.
-
-![App in use](screenshots/In-use-screenshot)
----
-
-## 🛠️ The "Stack"
-I kept it simple because my brain can only handle so many syntax errors at once:
-
-* **Python & FastAPI:** The engine room. Fast, efficient, and surprisingly forgiving when I forget a comma.
-* **yt-dlp:** The heavy lifter that actually grabs the videos.
-* **Gemini AI:** The actual brain of the operation. I’m just the guy holding the flashlight.
-* **HTML/CSS/JS:** Where I let my best friend Claudius write the front end , becuase this project will never leave  my computer if I was in charge of it.
-* **Hopes and Dreams:** Roughly 65% of the codebase.
-* **SupaBase:** Cuz why not.
+- **The Code:** held together with duct tape, stackoverflow, and Claude (the AI not the person. well. both actually)
+- **The Logic:** it works on my machine and that's good enough for now
+- **The UI:** ok tbh this one actually looks kinda clean now ngl
 
 ---
 
-## 🚀 How to Run (Maybe)
-I’m still figuring out how deployment works, so we’re running this locally like it’s 2005.
+## ✨ what's new (aka the "i actually did stuff" update)
 
-1.  **Clone the chaos:**
-    ```bash
-    git clone [https://github.com/msjabata25/Reel-Mind.git](https://github.com/msjabata25/Reel-Mind.git)
-    ```
-2.  **Get the Python stuff:**
-    ```bash
-    pip install -r requirements.txt
-    # If this takes forever, go grab a snack. 
-    ```
-3.  **Fire up the FastAPI engine:**
-    ```bash
-    cd python
-    uvicorn main:app --reload
-    ```
-4.  **Open your browser:** Go to `localhost:8000` and pray you don't see a 404.
+### 🔐 Auth (yes really)
 
----
+there's now a proper sign in / create account flow. ur reels are actually tied to ur account now instead of just... existing in the void. built with supabase auth.
 
-## ⚠️ Known Issues / "Features"
-* **Security Issues:** It does have a lot of bad practices for production, but since this isn't my million dollar startup idea, I won't bother till it's actually done. The main one being RLS disabled on my supabse , but that will be changed with before proper policies before any real users.
-*  **Broad except blocks:**  Yes, one error from gemini might just take down the entire app , which i may or may not have placed gemini and supabase under the same handler (dont roast me I'm new to this).
-*  **No Auth yet:** Which is excepted cuz of how bare bones the project is now. 
+![Login Screen](screenshots/Login)
+
+### 📚 Saved Reels Library
+
+u can now view ALL ur categorized reels in one place. each card shows:
+- the **summary** of what the reel is actually about (so u don't have to watch it again to remember)
+- the **categories** gemini slapped on it (Technology, Software, etc)
+- the **tags** for more specific vibes (#Dangerzone #sandbox #malware prevention etc)
+- the **date** u saved it
+- a button to go **view it on instagram**
+- a **delete button** for when u realize u don't actually care about that reel anymore
+
+### ⚙️ settings page
+
+there's a lil settings gear icon now. it exists. that's all i'll say for now
 
 ---
 
-## 🏗️ Future Plans (Roadmap to Greatness)
-- [ ] Actually figure out how authentication works and proper security for my project.
-- [ ] Stop using `print()` for debugging and learn what "logging" is. (I still don't know yet)
-- [ ] Survive Uni on top of desperately trying to keep up with the ever developing job market.
-- [ ] Maybe, and I mean MAYBE, I'll get an internship. (Highly doubt it at the time I'm writing this but a man can dream)
+## ⚙️ how it works (the "big brain" pipeline)
+
+1. **The Handover:** u drop a url. app says "bet, i got it"
+2. **The Heist (`yt-dlp`):** backend sneaks in and downloads the reel. digital repo man for ur memes
+3. **The Interrogation (Gemini AI):** i basically tell gemini *"bro just tell me what this is and put it in a category, i am NOT rewatching 47 saved reels"*
+4. **The Membership Check:** supabase auth makes sure ur actually logged in before saving anything
+5. **The Archive (Supabase):** categories + tags + summary get saved to ur personal library in the db
+6. **The Delivery:** fastapi sprints back to the frontend and ur reel shows up all neat and categorized
 
 ---
 
-## 🤝 Contributing
-If you’re a senior dev: **Please look away.** My code is painful to look at and is formated using ai (and I'm not ashamed of that)
+## 🛠️ the stack
 
-If you’re a fellow student: **Let's suffer together.** Feel free to open a PR if you find a way to make my error handling less embarrassing.
+- **Python & FastAPI** — the engine room. still fast, still forgiving when i forget a colon
+- **yt-dlp** — heavy lifter that grabs the videos. legend
+- **Gemini AI** — the actual brain. im just the guy who asked nicely
+- **Supabase** — handles the db AND auth now. doing double duty
+- **HTML/CSS/JS** — frontend looking cleaner than ever (claude assisted 🙏)
+- **Hopes and Dreams** — down to like 40% of the codebase now. progress.
 
 ---
-*Created with ❤️, ☕, and a very confused look on my face by [msjabata25](https://github.com/msjabata25).*
+
+## 🚀 how to run (maybe)
+
+still local. still 2005 coded. but it works.
+
+```bash
+# 1. clone the chaos
+git clone https://github.com/msjabata25/Reel-Mind.git
+
+# 2. get the python stuff
+pip install -r requirements.txt
+# go make a snack, it takes a sec
+
+# 3. set up ur .env (IMPORTANT or nothing will work)
+# SUPABASE_URL=your_url
+# SUPABASE_KEY=your_key
+# GEMINI_API_KEY=your_key
+
+# 4. fire it up
+cd python
+uvicorn main:app --reload
+
+# 5. go to localhost:8000 and pray
+```
+
+---
+
+## ⚠️ known issues / "features"
+
+- **RLS still kinda sus:** supabase row-level security is on my radar i swear. it'll be proper before any real users touch this
+- **broad except blocks:** yeah gemini going down might still take out supabase with it. i know. im working on it
+- **no refresh token handling:** if ur session expires u might just get a weird error. working on it. maybe.
+- **mobile layout:** it's... fine? mostly? squint a little
+
+---
+
+## 🏗️ roadmap (the "i have plans" section)
+
+- [x] auth (sign in / create account)
+- [x] saved reels library with categories + tags
+- [x] delete saved reels
+- [x] summary display on reel cards
+- [ ] search / filter ur saved reels by tag or category
+- [ ] proper logging instead of `print("wtf happened")`
+- [ ] RLS policies before this goes anywhere near production
+- [ ] maybe a chrome extension?? idk that sounds hard
+- [ ] survive uni while also not getting left behind by the job market
+- [ ] internship (still doubtful but the dream lives on)
+
+---
+
+## 🤝 contributing
+
+**if ur a senior dev:** please look away. i am begging u
+
+**if ur a fellow student:** we suffer together. PRs welcome, judgment not
+
+---
+
+*built with ❤️, ☕, way too many gemini api calls, and a very confused look on my face by [msjabata25](https://github.com/msjabata25)*

@@ -6,7 +6,6 @@
   <title>AI Reel Categorizer</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
   <link href="styles.css" rel="stylesheet" />
-  
 </head>
 <body>
 
@@ -16,10 +15,55 @@
 <div class="orb orb-2"></div>
 <div class="orb orb-3"></div>
 
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modalOverlay"></div>
+<div class="settings-modal" id="settingsModal">
+  <div class="modal-header">
+    <span class="modal-title">API Key Settings</span>
+    <button class="modal-close" id="closeModal" title="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <p class="modal-subtitle">Update or remove your Gemini API key.</p>
+
+  <div class="modal-input-wrap">
+    <input
+      type="password"
+      class="modal-key-input"
+      id="modalKeyInput"
+      placeholder="AIza..."
+      autocomplete="off"
+      spellcheck="false"
+    />
+    <button class="toggle-btn" id="toggleModalKey" title="Show/hide key">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="modal-status" id="modalStatus"></div>
+
+  <button class="modal-save-btn" id="modalSaveBtn">UPDATE KEY</button>
+  <button class="modal-clear-btn" id="clearKeyBtn">Change API key</button>
+<button class="modal-clear-btn" id="signOutBtn" style="margin-top:6px;border-color:rgba(255,255,255,0.1);color:rgba(245,240,235,0.3);">Sign out</button>
+</div>
+
 <div class="card">
 
+  <!-- Gear icon -->
+  <button class="gear-btn" id="gearBtn" title="API Key Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
+
   <div class="icon-wrap">
-    <!-- AI / tag icon -->
     <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 2a7 7 0 0 1 7 7c0 4-3 6-3 9H8c0-3-3-5-3-9a7 7 0 0 1 7-7z"/>
       <line x1="9" y1="21" x2="15" y2="21"/>
@@ -56,14 +100,14 @@
     <span class="btn-text">CATEGORIZE REEL</span>
     <div class="spinner"></div>
   </button>
-  
-  
+
   <div class="divider"><span>CATEGORIES & TAGS</span></div>
 
   <div class="result-box" id="resultBox">
     <div class="result-label">AI Analysis</div>
     <div id="resultContent" class="result-content"></div>
   </div>
+
   <div class="divider"><span>YOUR LIBRARY</span></div>
 
   <a href="saved.html" class="submit-btn" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;margin-bottom:0;">
@@ -82,7 +126,7 @@
   </p>
 </div>
 
-<script src="app.js" defer></script>
+<script type="module" src="app.js"></script>
 
 </body>
 </html>

@@ -15,16 +15,17 @@
     }
 
     body {
-      min-height: 100vh;
-      background: var(--blue-deep);
-      font-family: 'DM Sans', sans-serif;
-      color: var(--white);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      position: relative;
-    }
+  min-height: 100vh;
+  background: var(--blue-deep);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  position: relative;
+}
 
     /* ── Background atmosphere ── */
     .bg-mesh {
@@ -194,7 +195,7 @@
       transition: background-position 0.4s ease, transform 0.15s, box-shadow 0.2s, opacity 0.2s;
       box-shadow: 0 8px 28px rgba(244,116,50,0.3);
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
     }
 
     .submit-btn:hover:not(:disabled) {
@@ -302,4 +303,185 @@
     }
     .footer-note a:hover { opacity: 1; }
 
-    
+.card {
+  
+  margin: 48px auto;
+  
+}
+
+/* ── Gear button ── */
+    .gear-btn {
+      position: absolute;
+      top: 20px; right: 20px;
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 10px;
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: rgba(245,240,235,0.3);
+      transition: all 0.2s;
+    }
+    .gear-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: var(--orange-soft);
+      border-color: rgba(244,116,50,0.3);
+    }
+    .gear-btn svg { width: 16px; height: 16px; }
+
+    /* ── Modal overlay ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      animation: fadeIn 0.2s ease;
+    }
+
+    /* ── Settings modal ── */
+    .settings-modal {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -48%);
+      z-index: 51;
+      width: min(420px, 90vw);
+      background: #101e42;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 22px;
+      padding: 28px 28px 24px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+      animation: modalRise 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .settings-modal.visible,
+    .settings-modal.visible ~ .modal-overlay,
+    .modal-overlay:has(~ .settings-modal.visible) {
+      display: block;
+    }
+
+    /* Simpler approach — just toggle both together via JS */
+    .modal-overlay.visible { display: block; }
+    .settings-modal.visible { display: block; }
+
+    @keyframes modalRise {
+      from { opacity: 0; transform: translate(-50%, -44%); }
+      to   { opacity: 1; transform: translate(-50%, -50%); }
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+    }
+
+    .modal-close {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.06);
+      border: none;
+      border-radius: 8px;
+      display: grid; place-items: center;
+      cursor: pointer;
+      color: rgba(245,240,235,0.4);
+      transition: all 0.15s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.12); color: var(--white); }
+    .modal-close svg { width: 13px; height: 13px; }
+
+    .modal-subtitle {
+      font-size: 0.8rem;
+      color: rgba(245,240,235,0.35);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .modal-input-wrap {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .modal-key-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1.5px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 13px 48px 13px 16px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      color: var(--white);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      letter-spacing: 0.03em;
+    }
+    .modal-key-input::placeholder { color: rgba(245,240,235,0.2); letter-spacing: 0; }
+    .modal-key-input:focus {
+      border-color: var(--orange-dusk);
+      box-shadow: 0 0 0 3px rgba(244,116,50,0.12);
+    }
+
+    .toggle-btn {
+      position: absolute; right: 12px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none; cursor: pointer;
+      color: rgba(245,240,235,0.3);
+      padding: 4px; border-radius: 6px;
+      transition: color 0.2s;
+      display: grid; place-items: center;
+    }
+    .toggle-btn:hover { color: var(--orange-soft); }
+    .toggle-btn svg { width: 17px; height: 17px; }
+
+    .modal-status {
+      font-size: 0.78rem;
+      min-height: 18px;
+      margin-bottom: 14px;
+      padding-left: 2px;
+    }
+    .modal-status.error   { color: #f87171; }
+    .modal-status.success { color: #4ade80; }
+    .modal-status.loading { color: rgba(245,240,235,0.4); }
+
+    .modal-save-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(105deg, var(--orange-dusk), var(--blue-glow));
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+      box-shadow: 0 6px 20px rgba(244,116,50,0.25);
+      margin-bottom: 10px;
+    }
+    .modal-save-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .modal-save-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .modal-clear-btn {
+      width: 100%;
+      padding: 11px;
+      background: none;
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 12px;
+      color: rgba(248,113,113,0.5);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .modal-clear-btn:hover {
+      background: rgba(248,113,113,0.08);
+      border-color: rgba(248,113,113,0.4);
+      color: #f87171;
+    }

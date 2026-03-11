@@ -434,3 +434,120 @@
       .header { flex-direction: column; align-items: flex-start; gap: 16px; }
       .reels-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── Search bar ── */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 14px;
+      width: 16px; height: 16px;
+      color: rgba(245,240,235,0.3);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 40px 12px 40px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+    }
+
+    .search-input::placeholder { color: rgba(245,240,235,0.25); }
+    .search-input:focus {
+      border-color: rgba(244,116,50,0.4);
+      background: rgba(255,255,255,0.07);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 10px;
+      width: 24px; height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.08);
+      border: none;
+      border-radius: 6px;
+      color: rgba(245,240,235,0.4);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .search-clear:hover { background: rgba(255,255,255,0.14); color: var(--white); }
+    .search-clear svg { width: 12px; height: 12px; }
+
+    .search-results-count {
+      font-family: 'Syne', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: rgba(245,240,235,0.25);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ── Delete button ── */
+    .delete-btn {
+      width: 44px; height: 44px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.2);
+      border-radius: 12px;
+      color: rgba(248,113,113,0.5);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .delete-btn:hover {
+      background: rgba(248,113,113,0.18);
+      border-color: rgba(248,113,113,0.45);
+      color: #f87171;
+      transform: translateY(-1px);
+    }
+    .delete-btn svg { width: 15px; height: 15px; }
+
+    /* ── Card footer now uses flex for view + delete side by side ── */
+    .card-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .view-btn { flex: 1; }
+
+    .empty-state p strong { color: rgba(245,240,235,0.45); }
+    .card-summary.expanded {
+  display: block;
+  -webkit-line-clamp: unset;
+  line-clamp: unset;
+  overflow: visible;
+  cursor: pointer;
+}
+
+.card-summary {
+  cursor: pointer;
+}

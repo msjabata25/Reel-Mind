@@ -14,11 +14,11 @@ An AI-powered web app that takes an Instagram Reel URL, downloads it, analyzes i
 | Layer | Technology |
 |---|---|
 | Backend | Python, FastAPI |
-| AI Analysis | Google Gemini 2.0 Flash (`gemini-2.0-flash`) |
+| AI Analysis | Google Gemini 2.5 Flash (`gemini-2.5-flash`) |
 | Video Downloading | yt-dlp |
 | Database | Supabase (PostgreSQL) |
-| Frontend | Vanilla HTML, CSS, JavaScript |
-| Auth (planned) | Supabase Auth |
+| Auth | Supabase Auth |
+| Frontend | Vanilla HTML, CSS, JavaScript (ES Modules) |
 | Mobile (future) | React Native + Expo |
 | Browser Extension (future) | Vanilla JS/TS |
 
@@ -27,16 +27,26 @@ An AI-powered web app that takes an Instagram Reel URL, downloads it, analyzes i
 ## Project Structure
 
 ```
-project/
-├── main.py               # FastAPI backend
-├── vid_downloader.py     # yt-dlp download logic
-├── index.html            # Main categorizer page
-├── saved.html            # Saved reels library page
-├── app.js                # Frontend JS for index.html
-├── styles.css            # Shared styles
-├── .env                  # API keys (never commit this)
-├── .gitignore            # Ignores .env, downloads/, __pycache__/
-└── downloads/            # Temp folder for downloaded videos (gitignored)
+AN IDEA I CAME UP WITH/
+├── python/
+│   ├── main.py               # FastAPI backend
+│   ├── vid_downloader.py     # yt-dlp download logic
+│   ├── .env                  # API keys (never commit this)
+│   └── downloads/            # Temp folder for downloaded videos (gitignored)
+├── web/
+│   ├── auth.html             # Login / signup page
+│   ├── auth.js
+│   ├── setup.html            # First-time Gemini API key setup
+│   ├── setup.js
+│   ├── index.html            # Main categorizer page
+│   ├── app.js
+│   ├── saved.html            # Saved reels library page
+│   ├── saved.js
+│   ├── styles.css            # Main page styles
+│   └── saved_styles.css      # Saved page styles
+├── .gitignore
+├── progress.md
+└── README.md
 ```
 
 ---
@@ -44,12 +54,16 @@ project/
 ## What's Built So Far
 
 ### Backend (main.py)
-- `POST /categorize` — accepts a Reel URL, downloads the video, sends it to Gemini, saves result to Supabase, returns JSON
-- `GET /reels` — fetches all saved reels from Supabase and returns them
-- CORS middleware enabled (allow_origins=["*"] — needs to be locked down before production)
+- `POST /validate-key` — pings Gemini with the user's API key to confirm it works before saving
+- `POST /categorize` — verifies session token, accepts a Reel URL + user's Gemini API key, downloads the video, sends it to Gemini, saves result to Supabase with `user_id`, returns JSON
+- `GET /reels` — verifies session token, fetches only the authenticated user's reels from Supabase
+- `DELETE /reels/{id}` — verifies session token, deletes a reel only if it belongs to the requesting user
+- CORS middleware enabled (`allow_origins=["*"]` — needs to be locked down before production)
 - Environment variables via python-dotenv
 - Unique download folders per request using `uuid` to avoid race conditions
-- Error handling with try/except (note: currently one broad except block catches both Gemini and Supabase errors — should be separated later)
+- Separated Gemini vs Supabase error handling — DB failure no longer blocks AI result from returning
+- Session token verification on all protected endpoints via `supabase.auth.get_user(token)`
+- Frontend served as static files via `StaticFiles(directory="../web")`
 
 ### vid_downloader.py
 - Takes a URL and output directory
@@ -58,57 +72,83 @@ project/
 
 ### Supabase Database
 - Table name: `Reels` (capital R — important, Supabase is case sensitive)
-- Row Level Security (RLS): currently **disabled** for development — must re-enable before production
-- Columns: `id` (auto), `created_at` (auto), `user_id` (nullable, placeholder for auth), `url`, `summary`, `tags` (text[]), `categories` (text[])
+- Row Level Security (RLS): **enabled** with policy — users can only access their own reels
+- Columns: `id` (auto), `created_at` (auto), `user_id` (populated on insert), `url`, `summary`, `tags` (text[]), `categories` (text[])
+
+### Authentication
+- `auth.html` + `auth.js` — login/signup page
+  - Toggle between Sign In and Create Account modes
+  - Email + password + confirm password on signup
+  - Validates fields before submitting, shows password mismatch error
+  - On success redirects to `setup.html` (or `index.html` if API key already saved)
+  - Skips auth page entirely if session already exists
+- Supabase Auth used for all session management
+- JWT session token sent in `Authorization: Bearer` header with every backend request
+
+### API Key Flow
+- `setup.html` + `setup.js` — first-time Gemini API key entry
+  - Only shown after successful login and only if no key is saved
+  - Validates key against `/validate-key` before saving to localStorage
+  - Show/hide toggle on key input
+- Gear icon on `index.html` opens settings modal to update or remove key
+- Sign out button clears session and API key, redirects to `auth.html`
+- Gemini client initialized per-request using the user's own key — no API costs on the server
 
 ### Frontend
 - `index.html` + `app.js` + `styles.css` — main categorizer UI
+  - Auth guard — redirects to `auth.html` if no session, `setup.html` if no API key
   - URL input with validation, paste from clipboard, loading states, error handling
   - Displays AI result (summary, categories, tags) after analysis
-  - Button to navigate to saved reels page
-- `saved.html` — saved reels library page
-  - Fetches from `GET /reels` on load
-  - Renders a card per reel with summary, categories, tags, date, and "View on Instagram" link
-  - Skeleton loading state, empty state, error state with retry
+  - Summary is click-to-expand/collapse
+  - Gear icon opens settings modal (update key, sign out)
+  - Page scrolls correctly when result is long
+- `saved.html` + `saved.js` + `saved_styles.css` — saved reels library
+  - Auth guard on load
+  - Fetches only the current user's reels
+  - Search/filter bar — searches across summary, categories, and tags simultaneously
+  - Live results count while filtering
+  - Delete button on each card with instant fade-out animation, restores card on failure
+  - Skeleton loading, empty state, no-results state, error state with retry
+
+### AI Prompt
+- Improved prompt instructs Gemini to write summaries like a sharp, specific observation
+- Mentions the exact subject, dish, tool, or moment that makes the reel worth saving
+- Captures creator tone naturally — bans filler phrases like "pretty neat", "this guy", "absolutely"
+- Banned generic openers: "This video features...", "A person shows..."
 
 ### Design
 - Dark blue + orange color scheme
 - Fonts: Syne (headings) + DM Sans (body)
 - Glassmorphism cards, animated orbs, grain texture, gradient mesh background
+- Consistent design language across all 4 pages
 
 ---
 
 ## Known Issues / Technical Debt
 
-1. **Broad except block** — Gemini errors and Supabase errors are caught by the same handler. Should be separated so a DB failure doesn't block the AI result from reaching the user.
-2. **RLS disabled** — Supabase Row Level Security is off. Fine for dev, must be re-enabled with proper policies before any real users.
-3. **CORS wildcard** — `allow_origins=["*"]` needs to be replaced with the actual frontend domain before production.
-4. **No auth yet** — `user_id` column exists in the DB but is unused. All reels are shared globally right now.
-5. **yt-dlp fragility** — Instagram occasionally breaks yt-dlp. Keep it updated and handle failures gracefully.
-6. **model name** — make sure model is set to `gemini-2.0-flash`, not `gemini-3-flash-preview` (invalid).
+1. **CORS wildcard** — `allow_origins=["*"]` needs to be replaced with the actual frontend domain before production.
+2. **yt-dlp fragility** — Instagram occasionally breaks yt-dlp. Keep it updated and handle failures gracefully.
+3. **Gemini API key in localStorage** — fine for now, but consider encrypting or storing server-side tied to the user account in a future iteration.
 
 ---
 
 ## Next Steps (in order)
 
-1. **User authentication** via Supabase Auth — so each user has their own library
-2. **Populate user_id** on insert once auth is in place
-3. **RLS policies** — re-enable RLS and write policies so users only see their own reels
-4. **Separate error handling** in the `/categorize` endpoint
-5. **TikTok + YouTube Shorts support** — yt-dlp already supports these, just update the URL validation in the frontend
-6. **Deployment** — host the backend (Railway or Render) and serve the frontend statically
-7. **React Native app** — mobile version once the backend is stable
-8. **Browser extension** — desktop companion that surfaces saved reels while browsing
+1. **TikTok + YouTube Shorts support** — yt-dlp already supports these, just update URL validation in the frontend
+2. **Deployment** — host the backend (Railway or Render) and serve the frontend statically, then lock down CORS
+3. **React Native app** — mobile version once the backend is stable
+4. **Browser extension** — desktop companion that surfaces saved reels while browsing
 
 ---
 
 ## Environment Variables needed in .env
 
 ```
-GEMINI_API_KEY=your_gemini_key
 SUPABASE_URL=your_supabase_project_url
 SUPABASE_KEY=your_supabase_anon_key
 ```
+
+Note: `GEMINI_API_KEY` is no longer needed in `.env` — users supply their own key via the setup flow.
 
 ---
 
@@ -116,17 +156,22 @@ SUPABASE_KEY=your_supabase_anon_key
 
 ```bash
 # Install dependencies
-pip install fastapi uvicorn python-dotenv google-generativeai supabase yt-dlp
+pip install fastapi uvicorn python-dotenv google-generativeai supabase yt-dlp aiofiles
 
-# Start the backend
+# Start the backend (serves frontend too)
+cd python
 uvicorn main:app --reload
 
-# Open index.html directly in your browser (do NOT use Live Server — it causes page refresh conflicts)
+# Open in browser
+http://localhost:8000/auth.html
 ```
+
+Note: Do NOT open HTML files directly (`file:///...`) — ES modules require an HTTP server. Always use the localhost URL.
 
 ---
 
 ## Notes
 - Developer background: C++ primary, Python entry level (Cisco Python 1 Essentials badge)
 - Frontend is handled by AI assistance — developer focuses on backend
+- All JS files use ES Modules (`type="module"`) — required for Supabase SDK import
 - Repo: https://github.com/msjabata25/Reel-Mind

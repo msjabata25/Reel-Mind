@@ -9,7 +9,7 @@ ok real talk: ur "Saved" folder on instagram is literally a graveyard. u got a 3
 ---
 
 ![Main UI](screenshots/Basic-UI)
-![Saved Reels](screenshots/Saved-Reels)
+![Saved Reels](screenshots/Saved-reels.png)
 
 ## 🐣 the "Freshman" Disclaimer
 
@@ -27,7 +27,7 @@ still a freshman. still figuring things out. the codebase is maybe slightly less
 
 there's now a proper sign in / create account flow. ur reels are actually tied to ur account now instead of just... existing in the void. built with supabase auth.
 
-![Login Screen](screenshots/Login)
+![Login Screen](screenshots/login.png)
 
 ### 📚 Saved Reels Library
 

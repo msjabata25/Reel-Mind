@@ -18,6 +18,8 @@ app = fastapi.FastAPI()
 load_dotenv()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
+CORS_ALLOWED_ORIGIN = [""]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

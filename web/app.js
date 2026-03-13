@@ -109,12 +109,19 @@ signOutBtn.addEventListener('click', async () => {
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
-const REEL_PATTERN = /instagram\.com\/(reel|reels|p)\/[A-Za-z0-9_-]+/;
+const SOCIAL_VIDEO_PATTERN = /(instagram\.com\/(reel|reels|p)\/|youtube\.com\/shorts\/|tiktok\.com\/(@[\w.-]+\/video\/\d+|t\/\w+))/;
 
 function validate(url) {
   if (!url) return null;
-  try { new URL(url); } catch { return false; }
-  return REEL_PATTERN.test(url);
+  
+  try { 
+    // Basic URL structure check
+    new URL(url); 
+  } catch { 
+    return false; 
+  }
+
+  return SOCIAL_VIDEO_PATTERN.test(url);
 }
 
 function setStatus(msg, type = '') {

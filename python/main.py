@@ -1,7 +1,6 @@
 from google import genai
 from fastapi import Header
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from google.genai import types
 import pathlib
 from vid_downloader import download_instagram_video
@@ -12,19 +11,15 @@ import json
 from pydantic import BaseModel
 from supabase import create_client
 import uuid
-from fastapi.responses import RedirectResponse
-
 
 app = fastapi.FastAPI()
 
 load_dotenv()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
-
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["reel-mind-production.up.railway.app"],
+    allow_origins=["https://msjabata25.github.io"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -66,7 +61,6 @@ async def validate_key(request: ValidateKeyRequest):
 
 @app.post("/categorize")
 async def categorize_video(request: ReelRequest, authorization: str = Header(...)):
-    # Verify the user's session token
     try:
         user_id = get_user_id(authorization)
     except Exception:
@@ -106,7 +100,6 @@ Capture the creator's tone naturally — without exaggerating it or using casual
 Do not open with 'This video features...' or 'A person shows...'.
 """
 
-    # Step 1: Gemini analysis
     try:
         response = client.models.generate_content(
             model="gemini-2.5-flash",
@@ -126,7 +119,6 @@ Do not open with 'This video features...' or 'A person shows...'.
         print(f"Gemini Error: {e}")
         return {"summary": "The AI is a bit sleepy right now (High Demand). Please try again in a moment!", "categories": ["Error"], "tags": ["TryAgain"]}
 
-    # Step 2: Save to Supabase with user_id
     try:
         supabase.table("Reels").insert({
             "url":        request.url,
@@ -149,7 +141,6 @@ async def get_reels(authorization: str = Header(...)):
     except Exception:
         raise fastapi.HTTPException(status_code=401, detail="Invalid or expired session. Please sign in again.")
 
-    # Only return this user's reels
     result = supabase.table("Reels").select("*").eq("user_id", user_id).execute()
     return result.data
 
@@ -162,18 +153,8 @@ async def delete_reel(reel_id: int, authorization: str = Header(...)):
         raise fastapi.HTTPException(status_code=401, detail="Invalid or expired session. Please sign in again.")
 
     try:
-        # Only delete if the reel belongs to this user
         supabase.table("Reels").delete().eq("id", reel_id).eq("user_id", user_id).execute()
         return {"success": True, "deleted_id": reel_id}
     except Exception as e:
         print(f"Delete Error: {e}")
         raise fastapi.HTTPException(status_code=500, detail="Failed to delete reel.")
-
-
-# Serve frontend files from the web/ folder
-
-@app.get("/")
-async def root():
-    return RedirectResponse(url="/auth.html")
-
-app.mount("/", StaticFiles(directory="../web",), name="static")

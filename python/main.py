@@ -11,6 +11,7 @@ import json
 from pydantic import BaseModel
 from supabase import create_client
 import uuid
+import shutil
 
 app = fastapi.FastAPI()
 
@@ -130,6 +131,12 @@ Do not open with 'This video features...' or 'A person shows...'.
     except Exception as e:
         print(f"Supabase Error: {e}")
         result["_save_error"] = "Your reel was analyzed but couldn't be saved. Check your DB connection."
+    finally:
+        try:
+            shutil.rmtree(f"downloads/{unique_id}")
+            print(f"Cleaned up downloads/{unique_id}")
+        except Exception as e:
+            print(f"Cleanup Error: {e}")
 
     return result
 

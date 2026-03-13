@@ -1,7 +1,7 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const API_BASE     = 'http://localhost:8000';
+const API_BASE     = '';
 const API_ENDPOINT = `${API_BASE}/categorize`;
 
 const SUPABASE_URL = 'https://opmpbrpfmuowxlihasch.supabase.co';

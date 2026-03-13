@@ -12,6 +12,8 @@ import json
 from pydantic import BaseModel
 from supabase import create_client
 import uuid
+from fastapi.responses import RedirectResponse
+
 
 app = fastapi.FastAPI()
 
@@ -169,4 +171,9 @@ async def delete_reel(reel_id: int, authorization: str = Header(...)):
 
 
 # Serve frontend files from the web/ folder
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/auth.html")
+
 app.mount("/", StaticFiles(directory="../web",), name="static")

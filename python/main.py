@@ -24,7 +24,7 @@ supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["reel-mind.railway.internal"],
+    allow_origins=["reel-mind-production.up.railway.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

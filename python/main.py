@@ -85,32 +85,14 @@ async def categorize_video(request: ReelRequest, authorization: str = Header(...
     print(f"Processing video: {latest_video.name}")
     video_bytes = open(latest_video, "rb").read()
 
-    # Fetch user's existing categories
-    try:
-        cats_result = supabase.table("categories").select("name").eq("user_id", user_id).execute()
-        user_categories = [row["name"] for row in cats_result.data]
-    except Exception:
-        user_categories = []
-
-    categories_instruction = (
-        f"The user has these categories: {', '.join(user_categories)}. "
-        "Pick the most fitting one from this list. If none fit, create a short new category name."
-        if user_categories else
-        "Create appropriate category names for this content."
-    )
-
-    prompt = f"""
+    prompt = """
 Analyze this video. You MUST return ONLY a JSON object. Do not include markdown formatting like ```json.
 
 Use this exact structure:
-{{
+{
   "summary": "...",
-  "categories": ["Category 1"],
   "tags": ["hashtag1", "hashtag2", "hashtag3"]
-}}
-
-For categories: {categories_instruction}
-Only return 1 category.
+}
 
 For the summary: write 2-3 sentences that feel like a sharp, specific observation from someone who actually watched the video.
 Mention the exact subject, tool, dish, technique, or moment that makes this reel worth remembering.
@@ -138,20 +120,14 @@ Do not open with 'This video features...' or 'A person shows...'.
         return {"summary": "The AI is a bit sleepy right now (High Demand). Please try again in a moment!", "categories": ["Error"], "tags": ["TryAgain"]}
 
     try:
-        supabase.table("Reels").insert({
+        insert_result = supabase.table("Reels").insert({
             "url":        request.url,
             "summary":    result["summary"],
-            "tags":       result["tags"],
-            "categories": result["categories"],
+            "tags":       result.get("tags", []),
+            "categories": [],
             "user_id":    user_id
         }).execute()
-
-        # Auto-save any new categories Gemini created
-        for cat in result.get("categories", []):
-            existing = supabase.table("categories").select("id").eq("user_id", user_id).eq("name", cat).execute()
-            if not existing.data:
-                supabase.table("categories").insert({"user_id": user_id, "name": cat}).execute()
-
+        result["id"] = insert_result.data[0]["id"]
     except Exception as e:
         print(f"Supabase Error: {e}")
         result["_save_error"] = "Your reel was analyzed but couldn't be saved. Check your DB connection."
@@ -163,6 +139,77 @@ Do not open with 'This video features...' or 'A person shows...'.
             print(f"Cleanup Error: {e}")
 
     return result
+
+
+class CategorizeAIRequest(BaseModel):
+    reel_id: int
+    api_key: str
+
+
+@app.post("/categorize-ai")
+async def categorize_ai(request: CategorizeAIRequest, authorization: str = Header(...)):
+    try:
+        user_id = get_user_id(authorization)
+    except Exception:
+        raise fastapi.HTTPException(status_code=401, detail="Invalid or expired session. Please sign in again.")
+
+    # Fetch the reel
+    reel_result = supabase.table("Reels").select("*").eq("id", request.reel_id).eq("user_id", user_id).execute()
+    if not reel_result.data:
+        raise fastapi.HTTPException(status_code=404, detail="Reel not found.")
+    reel = reel_result.data[0]
+
+    # Fetch user's categories
+    try:
+        cats_result = supabase.table("categories").select("name").eq("user_id", user_id).execute()
+        user_categories = [row["name"] for row in cats_result.data]
+    except Exception:
+        user_categories = []
+
+    categories_instruction = (
+        f"The user has these categories: {', '.join(user_categories)}. "
+        "Pick the most fitting one. If none fit well, create a short new category name."
+        if user_categories else
+        "Create an appropriate short category name for this content."
+    )
+
+    prompt = f"""Based on this video summary, pick or create a single category.
+{categories_instruction}
+
+Summary: {reel['summary']}
+Tags: {', '.join(reel.get('tags', []))}
+
+You MUST return ONLY a JSON object. No markdown.
+{{"category": "Category Name"}}"""
+
+    try:
+        client = genai.Client(api_key=request.api_key)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt
+        )
+        result = json.loads(response.text)
+        category = result.get("category", "").strip()
+        if not category:
+            raise ValueError("Empty category")
+    except Exception as e:
+        print(f"Gemini categorize-ai error: {e}")
+        raise fastapi.HTTPException(status_code=500, detail="AI could not determine a category. Please try again.")
+
+    # Get current categories and append
+    current_cats = reel.get("categories") or []
+    if category not in current_cats:
+        current_cats.append(category)
+
+    # Save to reel
+    supabase.table("Reels").update({"categories": current_cats}).eq("id", request.reel_id).eq("user_id", user_id).execute()
+
+    # Auto-save category if new
+    existing = supabase.table("categories").select("id").eq("user_id", user_id).eq("name", category).execute()
+    if not existing.data:
+        supabase.table("categories").insert({"user_id": user_id, "name": category}).execute()
+
+    return {"category": category, "categories": current_cats}
 
 
 @app.get("/categories")

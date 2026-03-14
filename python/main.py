@@ -85,15 +85,32 @@ async def categorize_video(request: ReelRequest, authorization: str = Header(...
     print(f"Processing video: {latest_video.name}")
     video_bytes = open(latest_video, "rb").read()
 
-    prompt = """
+    # Fetch user's existing categories
+    try:
+        cats_result = supabase.table("categories").select("name").eq("user_id", user_id).execute()
+        user_categories = [row["name"] for row in cats_result.data]
+    except Exception:
+        user_categories = []
+
+    categories_instruction = (
+        f"The user has these categories: {', '.join(user_categories)}. "
+        "Pick the most fitting one from this list. If none fit, create a short new category name."
+        if user_categories else
+        "Create appropriate category names for this content."
+    )
+
+    prompt = f"""
 Analyze this video. You MUST return ONLY a JSON object. Do not include markdown formatting like ```json.
 
 Use this exact structure:
-{
+{{
   "summary": "...",
-  "categories": ["Category 1", "Subcategory 2"],
+  "categories": ["Category 1"],
   "tags": ["hashtag1", "hashtag2", "hashtag3"]
-}
+}}
+
+For categories: {categories_instruction}
+Only return 1 category.
 
 For the summary: write 2-3 sentences that feel like a sharp, specific observation from someone who actually watched the video.
 Mention the exact subject, tool, dish, technique, or moment that makes this reel worth remembering.
@@ -128,6 +145,13 @@ Do not open with 'This video features...' or 'A person shows...'.
             "categories": result["categories"],
             "user_id":    user_id
         }).execute()
+
+        # Auto-save any new categories Gemini created
+        for cat in result.get("categories", []):
+            existing = supabase.table("categories").select("id").eq("user_id", user_id).eq("name", cat).execute()
+            if not existing.data:
+                supabase.table("categories").insert({"user_id": user_id, "name": cat}).execute()
+
     except Exception as e:
         print(f"Supabase Error: {e}")
         result["_save_error"] = "Your reel was analyzed but couldn't be saved. Check your DB connection."
@@ -139,6 +163,37 @@ Do not open with 'This video features...' or 'A person shows...'.
             print(f"Cleanup Error: {e}")
 
     return result
+
+
+@app.get("/categories")
+async def get_categories(authorization: str = Header(...)):
+    try:
+        user_id = get_user_id(authorization)
+    except Exception:
+        raise fastapi.HTTPException(status_code=401, detail="Invalid or expired session. Please sign in again.")
+
+    result = supabase.table("categories").select("*").eq("user_id", user_id).execute()
+    return result.data
+
+
+@app.post("/categories")
+async def add_category(body: dict, authorization: str = Header(...)):
+    try:
+        user_id = get_user_id(authorization)
+    except Exception:
+        raise fastapi.HTTPException(status_code=401, detail="Invalid or expired session. Please sign in again.")
+
+    name = body.get("name", "").strip()
+    if not name:
+        raise fastapi.HTTPException(status_code=400, detail="Category name cannot be empty.")
+
+    # Check if already exists for this user
+    existing = supabase.table("categories").select("id").eq("user_id", user_id).eq("name", name).execute()
+    if existing.data:
+        return existing.data[0]
+
+    result = supabase.table("categories").insert({"user_id": user_id, "name": name}).execute()
+    return result.data[0]
 
 
 @app.get("/reels")

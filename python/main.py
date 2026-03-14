@@ -207,6 +207,32 @@ async def get_reels(authorization: str = Header(...)):
     return result.data
 
 
+@app.patch("/reels/{reel_id}")
+async def update_reel(reel_id: int, body: dict, authorization: str = Header(...)):
+    try:
+        user_id = get_user_id(authorization)
+    except Exception:
+        raise fastapi.HTTPException(status_code=401, detail="Invalid or expired session. Please sign in again.")
+
+    categories = body.get("categories")
+    if categories is None or not isinstance(categories, list):
+        raise fastapi.HTTPException(status_code=400, detail="categories must be a list.")
+
+    try:
+        supabase.table("Reels").update({"categories": categories}).eq("id", reel_id).eq("user_id", user_id).execute()
+
+        # Auto-save any new categories
+        for cat in categories:
+            existing = supabase.table("categories").select("id").eq("user_id", user_id).eq("name", cat).execute()
+            if not existing.data:
+                supabase.table("categories").insert({"user_id": user_id, "name": cat}).execute()
+
+        return {"success": True}
+    except Exception as e:
+        print(f"Update Error: {e}")
+        raise fastapi.HTTPException(status_code=500, detail="Failed to update reel.")
+
+
 @app.delete("/reels/{reel_id}")
 async def delete_reel(reel_id: int, authorization: str = Header(...)):
     try:

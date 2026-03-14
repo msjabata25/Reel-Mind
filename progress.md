@@ -64,9 +64,13 @@ reelmind/
 
 ### Backend (main.py)
 - `POST /validate-key` — pings Gemini with the user's API key to confirm it works before saving
-- `POST /categorize` — verifies session token, accepts a Reel URL + user's Gemini API key, downloads the video, sends it to Gemini, saves result to Supabase with `user_id`, returns JSON
+- `POST /categorize` — verifies session token, accepts a Reel URL + user's Gemini API key, downloads the video, sends it to Gemini for summary + tags only (no category), saves result to Supabase with empty categories array, returns JSON including the new reel `id`
+- `POST /categorize-ai` — accepts `reel_id` + `api_key`, fetches reel summary from Supabase, sends summary + user's category list to Gemini as text (no video re-download), picks or creates a category, saves it to the reel and auto-saves new category to categories table
+- `PATCH /reels/{id}` — verifies session token, updates the categories array of a reel, auto-saves any new categories to the categories table
 - `GET /reels` — verifies session token, fetches only the authenticated user's reels from Supabase
 - `DELETE /reels/{id}` — verifies session token, deletes a reel only if it belongs to the requesting user
+- `GET /categories` — verifies session token, fetches all categories belonging to the authenticated user
+- `POST /categories` — verifies session token, adds a new category for the user (duplicate-safe)
 - CORS locked to `https://msjabata25.github.io`
 - Environment variables via python-dotenv (Railway injects these in production)
 - Unique download folders per request using `uuid` to avoid race conditions
@@ -81,11 +85,15 @@ reelmind/
 - CLI compatible and importable as a module
 
 ### Supabase Database
-- Table name: `Reels` (capital R — important, Supabase is case sensitive)
-- Row Level Security (RLS): **enabled** with policies — users can only SELECT, INSERT, and DELETE their own reels
-- RLS expression: `auth.uid()::text = user_id` (user_id column is text, auth.uid() is uuid — cast required)
+- Table `Reels` (capital R — important, Supabase is case sensitive)
+  - RLS enabled — users can only SELECT, INSERT, DELETE, and UPDATE their own reels
+  - RLS expression: `auth.uid()::text = user_id`
+  - Columns: `id` (auto), `created_at` (auto), `user_id`, `url`, `summary`, `tags` (text[]), `categories` (text[])
+- Table `categories` (lowercase)
+  - RLS enabled — users can only SELECT and INSERT their own categories
+  - Columns: `id` (auto), `user_id` (uuid, default `auth.uid()`), `name` (text)
+  - Auto-populated when user manually adds a category, picks one from the UI, or Gemini creates a new one
 - Supabase **service role key** used in backend (required for RLS to work correctly on insert)
-- Columns: `id` (auto), `created_at` (auto), `user_id` (populated on insert), `url`, `summary`, `tags` (text[]), `categories` (text[])
 
 ### Authentication
 - `auth.html` + `auth.js` — login/signup page
@@ -110,23 +118,31 @@ reelmind/
 - `index.html` + `app.js` + `styles.css` — main categorizer UI
   - Auth guard — redirects to `auth.html` if no session, `setup.html` if no API key
   - URL input with validation (Instagram Reels, YouTube Shorts, TikTok), paste from clipboard, loading states, error handling
-  - Displays AI result (summary, categories, tags) after analysis
+  - After analysis, displays summary + tags, then a **Categorize** section with user's category pills + "✨ Let AI decide" button
+  - Picking a category pill calls `PATCH /reels/{id}` to save it; "Let AI decide" calls `/categorize-ai`
   - Summary is click-to-expand/collapse
   - Gear icon opens settings modal (update key, sign out)
   - Page scrolls correctly when result is long
 - `saved.html` + `saved.js` + `saved_styles.css` — saved reels library
   - Auth guard on load
   - Fetches only the current user's reels
+  - Horizontal scrollable **category filter pill row** — "All" + user's categories + "+" to add new ones inline
+  - Filtering by category pill narrows the grid; combined with search for dual filtering
   - Search/filter bar — searches across summary, categories, and tags simultaneously
   - Live results count while filtering
+  - Edit icon on each card's Categories section opens a **popover** with checkboxes for multi-category assignment + "✨ Let AI decide" option (calls `/categorize-ai`, pulses orange while thinking)
   - Delete button on each card with instant fade-out animation, restores card on failure
+  - Dynamic redirect button — detects Instagram/TikTok/YouTube from URL and labels accordingly
   - Skeleton loading, empty state, no-results state, error state with retry
 
-### AI Prompt
-- Improved prompt instructs Gemini to write summaries like a sharp, specific observation
-- Mentions the exact subject, dish, tool, or moment that makes the reel worth saving
-- Captures creator tone naturally — bans filler phrases like "pretty neat", "this guy", "absolutely"
-- Banned generic openers: "This video features...", "A person shows..."
+### AI Prompt & Categorization Flow
+- `/categorize` prompt instructs Gemini to write summaries like a sharp, specific observation
+  - Mentions the exact subject, dish, tool, or moment that makes the reel worth saving
+  - Captures creator tone naturally — bans filler phrases like "pretty neat", "this guy", "absolutely"
+  - Banned generic openers: "This video features...", "A person shows..."
+  - Only returns `summary` + `tags` — categorization is a separate step
+- `/categorize-ai` uses a lightweight text-only prompt (no video) — sends summary + tags + user's category list to Gemini, asks it to pick the best fit or create a new one
+- Two-step categorization flow keeps initial scan fast and token-efficient
 
 ### Design
 - Dark blue + orange color scheme
@@ -165,10 +181,13 @@ reelmind/
 
 ## Next Steps (in order)
 
-1. **React Native app** — mobile version now that backend is stable and deployed
-2. **Browser extension** — desktop companion that surfaces saved reels while browsing
-3. **Multi-language support** — key differentiator from competitors
-4. **Gemini JSON parsing hardening** — strip ```json fences before parsing to reduce edge case failures
+1. **Smarter prompt + Router pattern** — pass 1 categorizes only (cheap), pass 2 uses a category-specific prompt to extract concrete info (URLs, recipes, tips, events)
+2. **Static content support** — images, carousels, PDFs alongside video reels
+3. **Share to app** — PWA + Web Share Target API so ReelMind appears in the mobile share sheet
+4. **React Native app** — mobile version now that backend is stable
+5. **Browser extension** — desktop companion that surfaces saved reels while browsing
+6. **Multi-language support** — key differentiator from competitors
+7. **Gemini JSON parsing hardening** — strip ```json fences before parsing to reduce edge case failures
 
 ---
 

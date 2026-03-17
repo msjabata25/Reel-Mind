@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from supabase import create_client
 import uuid
 import shutil
+import tempfile
 
 
 
@@ -23,7 +24,8 @@ load_dotenv()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
 def getCookies():
     result = supabase.table('configs').select("value").eq("key" , "instagram_cookies").single().execute()
-    with open("/tmp/instacookies.txt" , "w") as f:
+    cookies_path = pathlib.Path(tempfile.gettempdir()) / "instacookies.txt"
+    with open(cookies_path, "w") as f:
         f.write(result.data["value"])
 
 getCookies()

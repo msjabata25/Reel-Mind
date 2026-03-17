@@ -13,10 +13,20 @@ from supabase import create_client
 import uuid
 import shutil
 
+
+
+
+
 app = fastapi.FastAPI()
 
 load_dotenv()
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+def getCookies():
+    result = supabase.table('configs').select("value").eq("key" , "instagram_cookies").single().execute()
+    with open("/tmp/instacookies.txt" , "w") as f:
+        f.write(result.data["value"])
+
+getCookies()
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +44,9 @@ class ReelRequest(BaseModel):
 
 class ValidateKeyRequest(BaseModel):
     api_key: str
+
+
+
 
 
 def get_user_id(authorization: str) -> str:
@@ -58,6 +71,11 @@ async def validate_key(request: ValidateKeyRequest):
         if any(word in error_msg for word in ["api key", "unauthorized", "permission", "401", "403"]):
             raise fastapi.HTTPException(status_code=400, detail="Invalid API key. Please check and try again.")
         return {"valid": True}
+
+
+
+
+
 
 
 @app.post("/categorize")

@@ -30,9 +30,13 @@ def getCookies():
 
 getCookies()
 
+# Set ALLOWED_ORIGIN in your .env to your frontend URL.
+# Example: ALLOWED_ORIGIN=https://yourusername.github.io
+# Defaults to "*" (all origins) if not set — fine for local dev, not recommended for production.
+allowed_origin = os.getenv("ALLOWED_ORIGIN", "*")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://msjabata25.github.io"],
+    allow_origins=[allowed_origin],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

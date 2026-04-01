@@ -8,6 +8,16 @@ ok real talk: ur "Saved" folder on instagram is literally a graveyard. u got a 3
 
 ---
 
+> ## 🪦 project status: shelved (but not dead)
+>
+> **the live demo is down.** instagram killed the yt-dlp approach that powered the whole thing and i'm not in a position to fight meta right now. the backend, the auth, the AI pipeline — all of it still works. just the video download layer got bodied.
+>
+> **but here's the thing:** the codebase is actually pretty clean. the architecture is solid. so instead of letting it rot in a private repo, i'm open-sourcing it.
+>
+> if u want to self-host ur own instance, fix the download layer, or build on top of what's here — go for it. everything u need is in [`SELF_HOSTING.md`](./SELF_HOSTING.md).
+
+---
+
 ![Main UI](screenshots/Basic-UI)
 ![Saved Reels](screenshots/Saved-reels.png)
 
@@ -21,17 +31,17 @@ still a freshman. still figuring things out. the codebase is maybe slightly less
 
 ---
 
-## ✨ what's new (aka the "i actually did stuff" update)
+## ✨ what got built (aka the "i actually did stuff" update)
 
 ### 🔐 Auth (yes really)
 
-there's now a proper sign in / create account flow. ur reels are actually tied to ur account now instead of just... existing in the void. built with supabase auth.
+there's a proper sign in / create account flow. ur reels are actually tied to ur account instead of just... existing in the void. built with supabase auth.
 
 ![Login Screen](screenshots/login.png)
 
 ### 📚 Saved Reels Library
 
-u can now view ALL ur categorized reels in one place. each card shows:
+u can view ALL ur categorized reels in one place. each card shows:
 - the **summary** of what the reel is actually about (so u don't have to watch it again to remember)
 - the **categories** gemini slapped on it (Technology, Software, etc)
 - the **tags** for more specific vibes (#Dangerzone #sandbox #malware prevention etc)
@@ -41,17 +51,17 @@ u can now view ALL ur categorized reels in one place. each card shows:
 
 ### ⚙️ Settings page
 
-there's a lil settings gear icon now. it exists. that's all i'll say for now
+there's a lil settings gear icon. it exists. that's all i'll say.
 
-### 🚀 Actually Deployed Now
+### 🚀 Actually Got Deployed
 
-it's live. like, on the internet. for real people. wild.
+was live. on the internet. for real people. good while it lasted.
 
 ---
 
 ## ⚙️ how it works (the "big brain" pipeline)
 
-1. **The Handover:** u drop a url. app says "bet, i got it"
+1. **The Handover:** u drop a url. app says "bet"
 2. **The Heist (`yt-dlp`):** backend sneaks in and downloads the reel. digital repo man for ur memes
 3. **The Interrogation (Gemini AI):** i basically tell gemini *"bro just tell me what this is and put it in a category, i am NOT rewatching 47 saved reels"*
 4. **The Membership Check:** supabase auth makes sure ur actually logged in before saving anything
@@ -64,27 +74,21 @@ it's live. like, on the internet. for real people. wild.
 ## 🛠️ the stack
 
 - **Python & FastAPI** — the engine room. still fast, still forgiving when i forget a colon
-- **yt-dlp** — heavy lifter that grabs the videos. legend
+- **yt-dlp** — heavy lifter that grabs the videos. legend (RIP for now)
 - **Gemini AI** — the actual brain. im just the guy who asked nicely
-- **Supabase** — handles the db AND auth now. doing double duty. RLS enabled so ur data is actually urs
-- **HTML/CSS/JS** — frontend looking cleaner than ever (claude assisted 🙏)
-- **Railway** — where the backend lives now. real deployment hours
-- **GitHub Pages** — serving the frontend. fast, free, zero config
+- **Supabase** — handles the db AND auth. doing double duty. RLS enabled so ur data is actually urs
+- **HTML/CSS/JS** — frontend looking cleaner than ever (claude "assisted" 🙏)
+- **Railway** — where the backend lived. real deployment hours
+- **GitHub Pages** — served the frontend. fast, free, zero config
 - **Hopes and Dreams** — down to like 40% of the codebase now. progress.
 
 ---
 
-## 🚀 how to use it
+## 🏗️ self-hosting
 
-it's deployed. just go here:
+the live demo is down but u can run ur own instance. the whole setup is documented in [`SELF_HOSTING.md`](./SELF_HOSTING.md) — supabase config, railway deploy, frontend setup, the works.
 
-**👉 [msjabata25.github.io/reelmind](https://msjabata25.github.io/reelmind)**
-
-create an account, enter ur Gemini API key (free at [aistudio.google.com](https://aistudio.google.com)), paste a reel url, and boom.
-
----
-
-## 🏗️ running locally (if u really want to)
+**quick start:**
 
 ```bash
 # 1. clone the chaos
@@ -94,31 +98,35 @@ git clone https://github.com/msjabata25/Reel-Mind.git
 pip install -r requirements.txt
 # go make a snack, it takes a sec
 
-# 3. set up ur .env (IMPORTANT or nothing will work)
+# 3. set up ur .env
 # SUPABASE_URL=your_url
 # SUPABASE_KEY=your_service_role_key
+# ALLOWED_ORIGIN=your_frontend_url
 
-# 4. fire it up
-cd python
+# 4. set up ur frontend config
+cp config.example.js config.js
+# fill in ur supabase + backend URLs
+
+# 5. fire it up
 uvicorn main:app --reload
 
-# 5. go to localhost:8000 and pray
+# 6. go to localhost:8000 and pray
 ```
 
-note: `GEMINI_API_KEY` doesn't go in .env anymore — users bring their own key through the app.
+full guide with supabase table setup, RLS policies, instagram cookies, and troubleshooting → **[SELF_HOSTING.md](./SELF_HOSTING.md)**
 
 ---
 
 ## ⚠️ known issues / "features"
 
-- **yt-dlp fragility:** instagram actively fights scrapers. if downloads start failing, update yt-dlp and try again
+- **yt-dlp fragility:** instagram actively fights scrapers. this is ultimately what shelved the project. if u fix this layer, lmk
 - **gemini json parsing:** gemini occasionally wraps its response in markdown fences despite being explicitly told not to. working on stripping those before parsing
 - **session expiry:** supabase tokens expire after an hour. if u get a weird auth error after leaving the tab open, just sign in again
 - **mobile layout:** it's... fine? mostly? squint a little
 
 ---
 
-## 🏗️ roadmap (the "i have plans" section)
+## 🏗️ roadmap (the "i had plans" section)
 
 - [x] auth (sign in / create account)
 - [x] saved reels library with categories + tags
@@ -128,7 +136,9 @@ note: `GEMINI_API_KEY` doesn't go in .env anymore — users bring their own key 
 - [x] RLS policies — ur data is actually urs
 - [x] deployed (Railway backend + GitHub Pages frontend)
 - [x] automatic video cleanup after processing
-- [ ] TikTok + YouTube Shorts support (url validation already done, just needs testing)
+- [x] open-sourced for self-hosting
+- [ ] a download layer that actually survives instagram's bot detection
+- [x] TikTok + YouTube Shorts support (url validation already done, just needs testing)
 - [ ] proper logging instead of `print("wtf happened")`
 - [ ] react native app — mobile version
 - [ ] maybe a chrome extension?? idk that sounds hard
@@ -143,7 +153,8 @@ note: `GEMINI_API_KEY` doesn't go in .env anymore — users bring their own key 
 
 **if ur a fellow student:** we suffer together. PRs welcome, judgment not
 
+**if u cracked the instagram download problem:** u are legally required to open a PR
+
 ---
 
 *built with ❤️, ☕, way too many gemini api calls, and a very confused look on my face by [msjabata25](https://github.com/msjabata25)*
-
